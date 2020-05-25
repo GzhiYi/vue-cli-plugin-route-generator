@@ -1,0 +1,46 @@
+{
+  "name": "vue-cli-plugin-route-generator",
+  "version": "1.0.6",
+  "description": "",
+  "main": "index.js",
+  "author": "GzhiYi",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^3.3.1",
+    "colors": "^1.4.0",
+    "lodash": "^4.17.15",
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "husky": "^4.2.3",
+    "lint-staged": "^10.0.9"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "husky": "^4.2.3",
+    "lint-staged": "^10.0.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GzhiYi/vue-cli-plugin-route-generator.git"
+  },
+  "gitHooks": {
+    "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS",
+    "pre-commit": "lint-staged"
+  },
+  "lint-staged": {
+    "*.js": [
+      "vue-cli-service lint",
+      "git add"
+    ],
+    "*.vue": [
+      "vue-cli-service lint",
+      "git add"
+    ],
+    "ignore": [
+      "node_modules",
+      "dist",
+      "package-lock.json"
+    ]
+  }
+}
