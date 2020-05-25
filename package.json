@@ -1,10 +1,11 @@
 {
   "name": "vue-cli-plugin-route-generator",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "",
   "main": "index.js",
   "author": "GzhiYi",
   "license": "MIT",
+  "keywords": ["vue", "vue-router", "vue-cli", "vue-cli-plugin", "router", "webpack"],
   "dependencies": {
     "chokidar": "^3.3.1",
     "colors": "^1.4.0",

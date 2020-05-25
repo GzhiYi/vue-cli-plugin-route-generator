@@ -1,31 +1,31 @@
 # vue-cli-plugin-route-generator
 
-Based on Nuxtjs source code, a custom plug-in for generating routes is separated.
+基于Nuxtjs源码，分离出的一个vue路由自动生成插件。
 
-[中文](./README.zh.md)
+[English](./README.md)
 
-## Install
+## 安装
 
-### Using yarn
+### yarn
 
 ```bash
 yarn add vue-cli-plugin-route-generator
 ```
-### Using npm
+### npm
 
 ```bash
 npm install -D vue-cli-plugin-route-generator
 ```
 
-## Usage
+## 用法
 
-After installing this plugin, changes to files or folders under `views` will automatically regenerate `routes.js`.
+在安装完插件之后，在`views`下的文件或者文件夹改动，将会自动对应生成路由`routes.js`。
 
-### Example
+### 例子
 
-In views:
+views文件夹内:
 
-- Basic Routes:
+- 基础路由:
 
 ```
 views/
@@ -35,7 +35,7 @@ views/
 --| index.vue
 ```
 
-will generate into:
+将生成如下:
 ```javascript
 router: {
   routes: [
@@ -58,7 +58,7 @@ router: {
 }
 ```
 
-- Dynamic Routes
+- 动态路由
 
 ```
 views/
@@ -70,7 +70,8 @@ views/
 --| index.vue
 ```
 
-will generate into:
+将生成如下:
+
 ```javascript
 router: {
   routes: [
@@ -98,7 +99,7 @@ router: {
 }
 ```
 
-- Nested Routes
+- 嵌套路由
 
 ```
 views/
@@ -108,7 +109,7 @@ views/
 --| users.vue
 ```
 
-will generate into:
+将生成如下:
 ```javascript
 router: {
   routes: [
@@ -131,7 +132,7 @@ router: {
   ]
 }
 ```
-- Dynamic Nested Routes
+- 动态嵌套路由
 
 ```
 views/
@@ -145,7 +146,7 @@ views/
 --| index.vue
 ```
 
-will generate into:
+将生成如下:
 ```javascript
 router: {
   routes: [
@@ -185,4 +186,4 @@ router: {
 }
 ```
 
-👉 [view more](https://nuxtjs.org/guide/routing)
+👉 [更多](https://nuxtjs.org/guide/routing)
