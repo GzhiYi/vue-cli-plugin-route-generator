@@ -11,13 +11,13 @@ const fs = require('fs')
 const glob = pify(Glob)
 require('colors')
 
-const generateRoutesAndFiles = async () => {
-  const files = await glob(`views/**/*.{vue,js}`, {
-    cwd: path.resolve(process.cwd(), './src'),
+const generateRoutesAndFiles = async (config) => {
+  const files = await glob(`${config.viewPath || 'views'}/**/*.{vue,js}`, {
+    // cwd: path.resolve(process.cwd(), './'),
     ignore: ['**/*.test.*', '**/*.spec.*', '**/-*.*', '**/#*.*']
   })
   files.map(f => f.replace(/('|")/g, '\\$1'))
-  return createRoutes(files, 'views', '-')  
+  return createRoutes(files, config.viewPath || 'views', '-')
 }
 
 const createRoutes = (files, viewsDir = '', routeNameSplitter = '-') => {
@@ -232,8 +232,9 @@ const cleanChildrenRoutes = (routes, isChild = false, routeNameSplitter = '-') =
   return routes
 }
 
-const creatRouter = () => {
-  generateRoutesAndFiles().then(res => {
+const creatRouter = (config) => {
+  const { srcPath } = config
+  generateRoutesAndFiles(config).then(res => {
     // add eslint disable for building lint
     let string = '/* eslint-disable */\n'
     res.requireComponent.forEach(res => {
@@ -242,14 +243,20 @@ const creatRouter = () => {
     string += `export default ${JSON.stringify(res.routes, null, 2)}`
       .replace(/"component": "(\w+?)"/g, `"component": $1`)
       .replace(/"(\w+?)":/g, '$1:').replace(/"/g, '\'')
-    fs.writeFile(path.resolve(process.cwd(), './src/router/routes.js'), `${string}\n`, () => {
-      console.log('\nRouter complete.'.green)
+    fs.writeFile(path.resolve(process.cwd(), `${srcPath || './src'}/router/routes.js`), `${string}\n`, () => {
+      console.log('\n路由表已重新生成.'.green)
     })
   })
 }
 class RouterWebpackPlugin {
+  constructor(config) {
+    this.config = config
+  }
   apply(compiler) {
-    const _creatRouter = throttle(creatRouter, 500)
+    const _creatRouter = throttle(() => {
+      creatRouter(this.config)
+    }, 500)
+    const { viewPath } = this.config
     compiler
       .hooks
       .entryOption
@@ -260,9 +267,9 @@ class RouterWebpackPlugin {
       .hooks
       .environment
       .tap('RouterWebpackPlugin', () => {
-        compiler.options.mode === 'development' && chokidar.watch('views', {
+        compiler.options.mode === 'development' && chokidar.watch(viewPath || 'views', {
           ignoreInitial: true,
-          cwd: path.resolve(process.cwd(), './src'),
+          // cwd: path.resolve(process.cwd(), srcPath || './src'),
           ignore: ['**/*.test.*', '**/*.spec.*', '**/-*.*', '**/#*.*']
         }).on('add', () => {
           _creatRouter()
