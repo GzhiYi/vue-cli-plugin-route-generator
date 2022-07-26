@@ -11,42 +11,62 @@ const fs = require('fs')
 const glob = pify(Glob)
 require('colors')
 
+/**
+ * 主函数，生成路由表和文件入口
+ * @param {object} config 配置
+ */
 const generateRoutesAndFiles = async (config) => {
+  // ** 匹配任意级别目录
   const files = await glob(`${config.viewPath || 'views'}/**/*.{vue,js}`, {
     // cwd: path.resolve(process.cwd(), './'),
     ignore: ['**/*.test.*', '**/*.spec.*', '**/-*.*', '**/#*.*']
   })
+  // 这里将文件名中带有"、'的替换为$
   files.map(f => f.replace(/('|")/g, '\\$1'))
   return createRoutes(files, config.viewPath || 'views', '-')
 }
 
+/**
+ * 
+ * @param {*} files 文件名数组
+ * @param {*} viewsDir views的目录
+ * @param {*} routeNameSplitter 路由分割符
+ */
 const createRoutes = (files, viewsDir = '', routeNameSplitter = '-') => {
   const supportedExtensions = ['vue', 'js']
   const routes = []
   const requireComponent = []
   files.forEach((file) => {
+    // keys 拿到每一级目录和文件名（不包括后缀）
     const keys = file
+      // 去掉viewsDir前缀
       .replace(new RegExp(`^${viewsDir}`), '')
+      // 去掉扩展后缀.js或.vue
       .replace(new RegExp(`\\.(${supportedExtensions.join('|')})$`), '')
       .replace(/\/{2,}/g, '/')
       .split('/')
       .slice(1)
 
+    // 单个路由结构
     const route = {
       name: '',
       path: '',
+      // 这里生成的component为用-连接的，比如 kol-index。最后转为驼峰kolIndex
       component: `${camelCase(keys.join('-').replace('_', ''))}`
     }
-
+    // 引入组件的字符串
     requireComponent.push(`const ${route.component} = () => import(/* webpackChunkName: "${route.component}" */ '@/views/${keys.join('/')}')`)
     let parent = routes
+    // keys 约为 ['kol', 'index']
     keys.forEach((key, i) => {
       // remove underscore only, if its the prefix
+      // 去掉开头的下划线
       const sanitizedKey = key.startsWith('_') ? key.substr(1) : key
 
       route.name = route.name ?
         route.name + routeNameSplitter + sanitizedKey :
         sanitizedKey
+      // 如果文件名为 - 的话，则会生成一个 * 的路由
       route.name += key === '_' ? 'all' : ''
       // route.chunkName = file.replace(new RegExp(`\\.(${supportedExtensions.join('|')})$`), '')
       const child = parent.find(parentRoute => parentRoute.name === route.name)
@@ -55,6 +75,7 @@ const createRoutes = (files, viewsDir = '', routeNameSplitter = '-') => {
         child.children = child.children || []
         parent = child.children
         route.path = ''
+        // 这里判断如果结尾是index的话，则路径为空。path不会带有index
       } else if (key === 'index' && i + 1 === keys.length) {
         route.path += i > 0 ? '' : '/'
       } else {
@@ -111,15 +132,18 @@ const escapeRegExp = string => {
 }
 const isWindows = /^win/.test(process.platform)
 const wp = (p = '') => {
+  // windows 的特殊处理
   if (isWindows) {
     return p.replace(/\\/g, '\\\\')
   }
   return p
 }
 const getRoutePathExtension = (key) => {
+  // 如果key 为 - 的话，则会生成一个 * 的路由
   if (key === '_') {
     return '*'
   }
+  // 如果key 为 _ 开始的话，则会生成一个 :key 的路由
   if (key.startsWith('_')) {
     return `:${key.substr(1)}`
   }
@@ -128,6 +152,7 @@ const getRoutePathExtension = (key) => {
 
 const DYNAMIC_ROUTE_REGEX = /^\/(:|\*)/
 
+// 这个函数是对routes数组进行一些默认规则的排序
 const sortRoutes = routes => {
   routes.sort((a, b) => {
     if (!a.path.length) {
